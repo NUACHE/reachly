@@ -1,14 +1,32 @@
-import { DEMO_MODE, DEMO_ACCOUNTS } from "@/lib/demo-accounts";
-import { MOCK_CAMPAIGNS } from "@/lib/mock-data";
+import { prisma } from "@/lib/prisma";
+import { toMockCampaign } from "@/lib/data/campaigns";
+import type { Role } from "@/generated/prisma/client";
 
-/** TEMPORARY demo-mode data access (DEBT-01) — see src/lib/data/brand.ts. */
+export interface AdminUserRow {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  suspended: boolean;
+}
 
-export async function getAllUsers() {
-  if (DEMO_MODE) return DEMO_ACCOUNTS;
-  throw new Error("Live database not yet connected — see Technical_Debt_Plan DEBT-01");
+/** Real, database-backed platform oversight (SRS FR-F1) — no demo-mode branching, so it reflects every account that has actually signed up. */
+export async function getAllUsers(): Promise<AdminUserRow[]> {
+  const users = await prisma.user.findMany({
+    include: { brandProfile: true, influencerProfile: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return users.map((user) => ({
+    id: user.id,
+    name: user.brandProfile?.companyName ?? user.influencerProfile?.displayName ?? user.name ?? user.email,
+    email: user.email,
+    role: user.role,
+    suspended: user.suspended,
+  }));
 }
 
 export async function getAllCampaignsAdmin() {
-  if (DEMO_MODE) return MOCK_CAMPAIGNS;
-  throw new Error("Live database not yet connected — see Technical_Debt_Plan DEBT-01");
+  const campaigns = await prisma.campaign.findMany({ orderBy: { createdAt: "desc" } });
+  return campaigns.map(toMockCampaign);
 }

@@ -49,8 +49,8 @@ export function InfluencerProfileForm({ profile }: { profile: MockInfluencer }) 
   return (
     <form className="flex max-w-xl flex-col gap-5" onSubmit={handleSubmit}>
       <div className="rounded-lg border border-dashed border-border-subtle bg-[#f8f9fb] px-4 py-3 text-xs text-muted">
-        Stats are self-reported — connecting a real TikTok account for verified stats is on our
-        roadmap.
+        These fields are self-reported. For verified stats, connect a YouTube account under
+        the &quot;Connected Accounts&quot; tab.
       </div>
 
       <TextField
