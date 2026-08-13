@@ -1,7 +1,6 @@
 import { Topbar } from "@/components/dashboard/topbar";
 import { InfluencerProfileSettings } from "@/components/influencer/influencer-profile-settings";
 import {
-  getInfluencerPoints,
   getInfluencerJoinedCampaigns,
   getInfluencerProfile,
   getSocialAccountsForInfluencer,
@@ -15,14 +14,14 @@ export default async function InfluencerProfilePage({ searchParams }: Influencer
   const influencerId = "demo-influencer-1";
   const params = await searchParams;
 
-  const [profile, points, joined, socialAccounts] = await Promise.all([
+  const [profile, joined, socialAccounts] = await Promise.all([
     getInfluencerProfile(influencerId),
-    getInfluencerPoints(influencerId),
     getInfluencerJoinedCampaigns(influencerId),
     getSocialAccountsForInfluencer(),
   ]);
 
   const youtubeAccount = socialAccounts.find((account) => account.platform === "YOUTUBE") ?? null;
+  const points = joined.reduce((sum, entry) => sum + entry.points, 0);
 
   return (
     <div>
@@ -35,6 +34,9 @@ export default async function InfluencerProfilePage({ searchParams }: Influencer
             id: entry.application.id,
             title: entry.campaign.title,
             earnedAt: entry.application.decidedAt,
+            points: entry.points,
+            views: entry.pointsViews,
+            engagement: entry.pointsEngagement,
           }))}
           youtubeAccount={youtubeAccount}
           initialTab={params.tab === "connected" ? "connected" : undefined}

@@ -1,15 +1,15 @@
 import { Award } from "lucide-react";
 import { Topbar } from "@/components/dashboard/topbar";
 import { HomeCampaigns } from "@/components/influencer/home-campaigns";
-import { getInfluencerPoints, getInfluencerJoinedCampaigns, getInfluencerProfile } from "@/lib/data/influencer";
+import { getInfluencerJoinedCampaigns, getInfluencerProfile } from "@/lib/data/influencer";
 
 export default async function InfluencerDashboardPage() {
   const influencerId = "demo-influencer-1";
-  const [profile, joined, points] = await Promise.all([
+  const [profile, joined] = await Promise.all([
     getInfluencerProfile(influencerId),
     getInfluencerJoinedCampaigns(influencerId),
-    getInfluencerPoints(influencerId),
   ]);
+  const points = joined.reduce((sum, entry) => sum + entry.points, 0);
   const firstName = profile.displayName.split(" ")[0];
 
   return (

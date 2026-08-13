@@ -27,24 +27,6 @@ const OBJECTIVES: { key: CampaignObjective; title: string; description: string; 
   { key: "PRODUCT", title: "Product", description: "I want to sell a product or service", icon: Rocket },
 ];
 
-interface KpiItem {
-  id: string;
-  label: string;
-  enabled: boolean;
-  value: number;
-  hasNumber: boolean;
-}
-
-const DEFAULT_KPIS: KpiItem[] = [
-  { id: "like", label: "Engage {n} people in your audience group to respond by liking or favouriting your post", enabled: true, value: 1, hasNumber: true },
-  { id: "share", label: "Engage {n} people in your audience group to respond by sharing or reposting your post", enabled: true, value: 1, hasNumber: true },
-  { id: "comment", label: "Engage {n} people in your audience group to respond by replying or commenting on your post", enabled: true, value: 2, hasNumber: true },
-  { id: "poll", label: "Engage your audience with a poll that can help determine how they associate with your Brand", enabled: true, value: 0, hasNumber: false },
-  { id: "conversation", label: "Spin a conversation to get a minimum of {n} people talking about the key topic in your post", enabled: false, value: 2, hasNumber: true },
-  { id: "views", label: "Get a minimum of {n} people to see your post on this campaign", enabled: false, value: 2, hasNumber: true },
-  { id: "refer", label: "Engage a minimum of {n} people to directly refer to the brand or topic within 1 hour(s)", enabled: true, value: 1, hasNumber: true },
-];
-
 function stepForPhase(phase: Phase) {
   switch (phase) {
     case "objective":
@@ -101,7 +83,8 @@ export function CampaignWizard({ influencers }: CampaignWizardProps) {
   const [allowRequests, setAllowRequests] = useState(true);
   const [visibleToAll, setVisibleToAll] = useState(false);
 
-  const [kpis, setKpis] = useState<KpiItem[]>(DEFAULT_KPIS);
+  const [targetViews, setTargetViews] = useState("");
+  const [targetLikes, setTargetLikes] = useState("");
   const [dos, setDos] = useState<string[]>(["All posts must go with all the 4 hashtags", "Each post should have minimum of 2 and maximum of 4 pics in post"]);
   const [donts, setDonts] = useState<string[]>(["No offensive captions", "All posts must go with no hashtags"]);
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -120,14 +103,6 @@ export function CampaignWizard({ influencers }: CampaignWizardProps) {
   );
   const [invitedIds, setInvitedIds] = useState<string[]>([]);
   const [influencerSearch, setInfluencerSearch] = useState("");
-
-  function toggleKpi(id: string) {
-    setKpis((prev) => prev.map((k) => (k.id === id ? { ...k, enabled: !k.enabled } : k)));
-  }
-
-  function setKpiValue(id: string, value: number) {
-    setKpis((prev) => prev.map((k) => (k.id === id ? { ...k, value } : k)));
-  }
 
   function handleMediaChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -152,7 +127,8 @@ export function CampaignWizard({ influencers }: CampaignWizardProps) {
       budget: Number(budget),
       deliverables,
       deadline: endDate,
-      kpis: kpis.filter((k) => k.enabled).map((k) => k.label.replace("{n}", String(k.value))),
+      targetViews: targetViews ? Number(targetViews) : undefined,
+      targetLikes: targetLikes ? Number(targetLikes) : undefined,
       dos,
       donts,
       hashtags,
@@ -320,34 +296,31 @@ export function CampaignWizard({ influencers }: CampaignWizardProps) {
           {phase === "rules" ? (
             <div className="flex flex-col gap-5">
               <div className="rounded-2xl border border-border-subtle bg-white p-5">
-                <h3 className="mb-4 text-sm font-semibold text-ink">Key Performance Indicators (KPIs)</h3>
-                <div className="flex flex-col gap-3">
-                  {kpis.map((kpi) => {
-                    const [before, after] = kpi.label.split("{n}");
-                    return (
-                      <label key={kpi.id} className="flex items-start gap-3 text-xs text-ink">
-                        <input
-                          type="checkbox"
-                          checked={kpi.enabled}
-                          onChange={() => toggleKpi(kpi.id)}
-                          className="mt-0.5 size-4 shrink-0 rounded border-border-subtle text-brand-orange focus:ring-brand-orange"
-                        />
-                        <span>
-                          {before}
-                          {kpi.hasNumber ? (
-                            <input
-                              type="number"
-                              min={0}
-                              value={kpi.value}
-                              onChange={(e) => setKpiValue(kpi.id, Number(e.target.value))}
-                              className="mx-1 w-12 rounded border border-border-subtle px-1.5 py-0.5 text-center text-xs"
-                            />
-                          ) : null}
-                          {after}
-                        </span>
-                      </label>
-                    );
-                  })}
+                <h3 className="mb-1 text-sm font-semibold text-ink">Key Performance Indicators (KPIs)</h3>
+                <p className="mb-4 text-xs text-muted">
+                  Set numeric targets. Once an influencer connects YouTube and posts, their real
+                  view/like counts are measured against these to show campaign progress. Leave a
+                  target at 0 to skip tracking that metric.
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <TextField
+                    label="Target Views"
+                    name="targetViews"
+                    type="number"
+                    min={0}
+                    placeholder="e.g. 10000"
+                    value={targetViews}
+                    onChange={(e) => setTargetViews(e.target.value)}
+                  />
+                  <TextField
+                    label="Target Likes"
+                    name="targetLikes"
+                    type="number"
+                    min={0}
+                    placeholder="e.g. 500"
+                    value={targetLikes}
+                    onChange={(e) => setTargetLikes(e.target.value)}
+                  />
                 </div>
               </div>
 
@@ -405,17 +378,12 @@ export function CampaignWizard({ influencers }: CampaignWizardProps) {
 
               <div className="rounded-2xl border border-border-subtle bg-white p-6">
                 <h3 className="mb-3 text-sm font-semibold text-ink">Key Performance Indicators (KPIs)</h3>
-                {kpis.filter((k) => k.enabled).length === 0 ? (
-                  <p className="text-xs text-muted">No KPIs selected.</p>
+                {!targetViews && !targetLikes ? (
+                  <p className="text-xs text-muted">No targets set.</p>
                 ) : (
                   <ul className="flex flex-col gap-2">
-                    {kpis
-                      .filter((k) => k.enabled)
-                      .map((k) => (
-                        <li key={k.id} className="text-xs text-muted">
-                          • {k.label.replace("{n}", String(k.value))}
-                        </li>
-                      ))}
+                    {targetViews ? <li className="text-xs text-muted">• {Number(targetViews).toLocaleString()} views</li> : null}
+                    {targetLikes ? <li className="text-xs text-muted">• {Number(targetLikes).toLocaleString()} likes</li> : null}
                   </ul>
                 )}
               </div>

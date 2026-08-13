@@ -99,6 +99,14 @@ export function PlatformMetricsChart({ points }: PlatformMetricsChartProps) {
               <path key={s.key} d={linePath(s.key)} fill="none" stroke={s.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
             ))}
 
+            {/* Static per-point markers — without these, a single-point series (a lone "M" with no
+                "L" in linePath) renders no visible stroke at all until the hover circles appear. */}
+            {SERIES_META.map((s) =>
+              points.map((p, i) => (
+                <circle key={`${s.key}-${i}`} cx={xAt(i)} cy={yAt(p[s.key])} r={3} fill={s.color} />
+              )),
+            )}
+
             {hoverIndex !== null ? (
               <line x1={xAt(hoverIndex)} x2={xAt(hoverIndex)} y1={PAD_TOP} y2={VIEW_H - PAD_BOTTOM} stroke="#c9cdd6" strokeWidth={1} />
             ) : null}

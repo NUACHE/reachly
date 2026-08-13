@@ -21,7 +21,7 @@ type NavKey = (typeof NAV_ITEMS)[number]["key"] | "logout";
 interface InfluencerProfileSettingsProps {
   profile: MockInfluencer;
   points: number;
-  pointsEntries: { id: string; title: string; earnedAt: string }[];
+  pointsEntries: { id: string; title: string; earnedAt: string; points: number; views: number; engagement: number }[];
   youtubeAccount: YoutubeAccountView | null;
   initialTab?: NavKey;
   socialError?: string | null;

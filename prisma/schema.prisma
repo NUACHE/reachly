@@ -172,7 +172,8 @@ model Campaign {
   deliverables    String
   status          CampaignStatus    @default(OPEN)
   deadline        DateTime
-  kpis            String[]          @default([])
+  targetViews     Int               @default(0)
+  targetLikes     Int               @default(0)
   dos             String[]          @default([])
   donts           String[]          @default([])
   hashtags        String[]          @default([])

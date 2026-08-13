@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 import { computeMatchScore } from "@/lib/matching";
+import { summarizePoints } from "@/lib/points";
+import { kpiProgressPercent } from "@/lib/kpi";
 import { toMockCampaign } from "@/lib/data/campaigns";
 import type { MockAlert } from "@/lib/mock-data";
 
@@ -61,46 +63,48 @@ export async function getInfluencerApplications(_influencerId: string) {
   }));
 }
 
-/** No KPI-to-post linkage exists yet, so progress is an honest 100 once completed and 0 otherwise. */
+/**
+ * `kpiProgress` is real: actual synced views/likes for this application against the
+ * campaign's targetViews/targetLikes (kpiProgressPercent), not the old binary "0% until
+ * COMPLETED, then 100%". `points` (plus its `pointsViews`/`pointsEngagement` breakdown) is
+ * earned from the same synced posts via `summarizePoints` — deliberately independent of
+ * campaign budget, so it's not a real payout ledger, but it does reflect genuine audience
+ * reach rather than an arbitrary cut of what the brand paid (Technical_Debt_Plan
+ * DEBT-07/DEBT-12).
+ */
 export async function getInfluencerJoinedCampaigns(_influencerId: string) {
   const influencer = await getCurrentInfluencerProfile();
 
   const applications = await prisma.application.findMany({
     where: { influencerId: influencer.id, status: { in: ["ACCEPTED", "COMPLETED"] } },
-    include: { campaign: true },
+    include: { campaign: true, socialPosts: { select: { views: true, likes: true, comments: true } } },
   });
 
-  return applications.map((application) => ({
-    application: {
-      id: application.id,
-      campaignId: application.campaignId,
-      note: application.note ?? "",
-      matchScore: application.matchScore,
-      status: application.status,
-      appliedAt: application.appliedAt.toISOString().slice(0, 10),
-      decidedAt: (application.decidedAt ?? application.appliedAt).toISOString(),
-    },
-    campaign: toMockCampaign(application.campaign),
-    kpiProgress: application.status === "COMPLETED" ? 100 : 0,
-  }));
-}
+  return applications.map((application) => {
+    const { views, engagement, points } = summarizePoints(application.socialPosts);
+    const likes = application.socialPosts.reduce((sum, post) => sum + post.likes, 0);
+    const kpiProgress = kpiProgressPercent(
+      { views, likes },
+      { targetViews: application.campaign.targetViews, targetLikes: application.campaign.targetLikes },
+    );
 
-/**
- * Points earned for every campaign this influencer has been accepted into — a simple,
- * disclosed placeholder formula (5% of campaign budget), not a real payout ledger. Framed
- * as redeemable points rather than a cash balance until a real payment/redemption model
- * ships (Technical_Debt_Plan DEBT-07).
- */
-export async function getInfluencerPoints(_influencerId: string) {
-  const influencer = await getCurrentInfluencerProfile();
-
-  const applications = await prisma.application.findMany({
-    where: { influencerId: influencer.id, status: { in: ["ACCEPTED", "COMPLETED"] } },
-    include: { campaign: true },
+    return {
+      application: {
+        id: application.id,
+        campaignId: application.campaignId,
+        note: application.note ?? "",
+        matchScore: application.matchScore,
+        status: application.status,
+        appliedAt: application.appliedAt.toISOString().slice(0, 10),
+        decidedAt: (application.decidedAt ?? application.appliedAt).toISOString(),
+      },
+      campaign: toMockCampaign(application.campaign),
+      kpiProgress,
+      points,
+      pointsViews: views,
+      pointsEngagement: engagement,
+    };
   });
-
-  const earned = applications.reduce((sum, application) => sum + application.campaign.budget * 0.05, 0);
-  return Math.round(earned);
 }
 
 /** Real posts from a connected social account that were auto-matched to this campaign during sync (hashtag matching in social.ts). */

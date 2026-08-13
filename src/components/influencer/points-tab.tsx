@@ -1,10 +1,14 @@
 import { Award, CheckCircle2 } from "lucide-react";
 import { relativeTimeFrom } from "@/lib/dates";
+import { POINTS_PER_ENGAGEMENT, POINTS_PER_VIEW } from "@/lib/points";
 
 interface PointsEntry {
   id: string;
   title: string;
   earnedAt: string;
+  points: number;
+  views: number;
+  engagement: number;
 }
 
 export function PointsTab({ points, entries }: { points: number; entries: PointsEntry[] }) {
@@ -27,14 +31,15 @@ export function PointsTab({ points, entries }: { points: number; entries: Points
           </button>
         </div>
         <p className="mt-3 text-xs text-white/60">
-          Points are earned automatically from accepted campaigns. Redeeming points for cash
-          is coming in a future update.
+          Formula: {POINTS_PER_VIEW} pt per view + {POINTS_PER_ENGAGEMENT} pt per like/comment on
+          your synced posts for accepted campaigns. Redeeming points for cash is coming in a
+          future update.
         </p>
       </div>
 
       {entries.length === 0 ? (
         <p className="rounded-2xl border border-border-subtle bg-white px-6 py-16 text-center text-sm text-muted">
-          No points earned yet.
+          No points earned yet — connect YouTube and get accepted into a campaign to start earning.
         </p>
       ) : (
         <div className="flex flex-col gap-2">
@@ -46,10 +51,16 @@ export function PointsTab({ points, entries }: { points: number; entries: Points
                 </span>
                 <div>
                   <p className="text-xs font-semibold text-ink">{entry.title}</p>
-                  <p className="text-[11px] text-muted">{relativeTimeFrom(new Date(entry.earnedAt))}</p>
+                  <p className="text-[11px] text-muted">
+                    {entry.views.toLocaleString()} views · {entry.engagement.toLocaleString()} likes/comments ·{" "}
+                    {relativeTimeFrom(new Date(entry.earnedAt))}
+                  </p>
                 </div>
               </div>
-              <CheckCircle2 size={18} className="text-emerald-500" />
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-brand-orange">+{entry.points.toLocaleString()} pts</span>
+                <CheckCircle2 size={18} className="text-emerald-500" />
+              </div>
             </div>
           ))}
         </div>

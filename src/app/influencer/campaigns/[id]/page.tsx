@@ -56,15 +56,16 @@ export default async function InfluencerCampaignDetailPage({
             <p className="mt-3 text-xs font-semibold text-brand-blue">Earn up to ¢{campaign.budget}</p>
           </div>
 
-          {campaign.kpis?.length ? (
+          {campaign.targetViews > 0 || campaign.targetLikes > 0 ? (
             <div className="rounded-2xl border border-border-subtle bg-white p-6">
               <h3 className="mb-3 text-sm font-semibold text-ink">Key Performance Indicators (KPIs)</h3>
               <ul className="flex flex-col gap-2.5">
-                {campaign.kpis.map((kpi, i) => (
-                  <li key={i} className="text-xs text-muted">
-                    • {kpi}
-                  </li>
-                ))}
+                {campaign.targetViews > 0 ? (
+                  <li className="text-xs text-muted">• {campaign.targetViews.toLocaleString()} views</li>
+                ) : null}
+                {campaign.targetLikes > 0 ? (
+                  <li className="text-xs text-muted">• {campaign.targetLikes.toLocaleString()} likes</li>
+                ) : null}
               </ul>
             </div>
           ) : null}
