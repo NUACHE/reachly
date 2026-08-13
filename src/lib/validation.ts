@@ -26,27 +26,6 @@ export const signupSchema = z.discriminatedUnion("role", [
   influencerSignupSchema,
 ]);
 
-export const completeGoogleBrandSignupSchema = z.object({
-  role: z.literal("BRAND"),
-  token: z.string().min(1),
-  companyName: z.string().min(2),
-  website: z.string().url().optional().or(z.literal("")),
-});
-
-export const completeGoogleInfluencerSignupSchema = z.object({
-  role: z.literal("INFLUENCER"),
-  token: z.string().min(1),
-  displayName: z.string().min(2),
-  niches: z.array(nicheField).min(1).max(3),
-  followerCount: z.coerce.number().int().min(0),
-  engagementRate: z.coerce.number().min(0).max(100),
-});
-
-export const completeGoogleSignupSchema = z.discriminatedUnion("role", [
-  completeGoogleBrandSignupSchema,
-  completeGoogleInfluencerSignupSchema,
-]);
-
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),

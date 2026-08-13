@@ -1,10 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { DEMO_MODE, findDemoAccount } from "@/lib/demo-accounts";
-import { signGoogleSignupToken } from "@/lib/auth-tokens";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -42,35 +40,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
   ],
   callbacks: {
-    signIn: async ({ user, account }) => {
-      if (account?.provider !== "google") return true;
-      if (!user.email) return false;
-
-      const existing = await prisma.user.findUnique({ where: { email: user.email } });
-      if (existing) return true;
-
-      // No account for this Google email yet — send them to finish role/profile setup
-      // instead of creating a half-formed User with no BrandProfile/InfluencerProfile.
-      const token = signGoogleSignupToken(user.email, user.name ?? "");
-      return `/signup?google_token=${encodeURIComponent(token)}`;
-    },
     jwt: async ({ token, user, account }) => {
       if (account?.provider === "credentials" && user) {
         token.id = user.id as string;
         token.role = user.role!;
-      }
-      if (account?.provider === "google" && token.email) {
-        const dbUser = await prisma.user.findUnique({ where: { email: token.email } });
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.role = dbUser.role;
-        }
       }
       return token;
     },

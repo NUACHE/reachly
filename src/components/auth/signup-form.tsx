@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { TextField } from "@/components/ui/text-field";
 import { PasswordField } from "@/components/ui/password-field";
@@ -10,17 +10,14 @@ import { Button } from "@/components/ui/button";
 import { NicheSelector } from "@/components/ui/niche-selector";
 import { StepIndicator } from "@/components/auth/step-indicator";
 import { RoleToggle } from "@/components/auth/role-toggle";
-import { GoogleButton } from "@/components/auth/google-button";
-import { signUpAction, completeGoogleSignupAction } from "@/lib/actions/auth";
+import { signUpAction } from "@/lib/actions/auth";
 
 type SignupRole = "BRAND" | "INFLUENCER";
 
 export function SignUpForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const googleToken = searchParams.get("google_token");
 
-  const [step, setStep] = useState<1 | 2>(googleToken ? 2 : 1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [role, setRole] = useState<SignupRole>("BRAND");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,33 +46,10 @@ export function SignUpForm() {
     setStep(2);
   }
 
-  async function finishGoogleSignIn() {
-    // Full-page redirect through Google again — near-instant since consent was already granted moments ago.
-    await signIn("google", { callbackUrl: "/dashboard" });
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
-
-    if (googleToken) {
-      const payload =
-        role === "BRAND"
-          ? { role, token: googleToken, companyName, website }
-          : { role, token: googleToken, displayName, niches, followerCount: Number(followerCount), engagementRate: Number(engagementRate) };
-
-      const result = await completeGoogleSignupAction(payload);
-      if (!result.success) {
-        setIsSubmitting(false);
-        setError(result.error ?? "Something went wrong. Please try again.");
-        return;
-      }
-
-      await finishGoogleSignIn();
-      setIsSubmitting(false);
-      return;
-    }
 
     const payload =
       role === "BRAND"
@@ -145,14 +119,6 @@ export function SignUpForm() {
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <Button type="submit">Continue</Button>
-
-        <div className="flex items-center gap-3 text-xs text-muted">
-          <span className="h-px flex-1 bg-border-subtle" />
-          or
-          <span className="h-px flex-1 bg-border-subtle" />
-        </div>
-
-        <GoogleButton />
       </form>
     );
   }
@@ -160,13 +126,6 @@ export function SignUpForm() {
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <StepIndicator currentStep={2} />
-
-      {googleToken ? (
-        <>
-          <p className="text-xs text-muted">Finishing sign up with Google — just pick your role and a few details.</p>
-          <RoleToggle value={role} onChange={setRole} />
-        </>
-      ) : null}
 
       {role === "BRAND" ? (
         <>
@@ -234,11 +193,9 @@ export function SignUpForm() {
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       <div className="flex gap-3">
-        {googleToken ? null : (
-          <Button type="button" variant="ghost" className="flex-1" onClick={() => setStep(1)}>
-            Back
-          </Button>
-        )}
+        <Button type="button" variant="ghost" className="flex-1" onClick={() => setStep(1)}>
+          Back
+        </Button>
         <Button
           type="submit"
           className="flex-1"

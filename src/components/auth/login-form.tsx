@@ -8,7 +8,6 @@ import { TextField } from "@/components/ui/text-field";
 import { PasswordField } from "@/components/ui/password-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { GoogleButton } from "@/components/auth/google-button";
 
 export function LoginForm() {
   const router = useRouter();
@@ -74,14 +73,6 @@ export function LoginForm() {
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Logging in..." : "Login"}
       </Button>
-
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className="h-px flex-1 bg-border-subtle" />
-        or
-        <span className="h-px flex-1 bg-border-subtle" />
-      </div>
-
-      <GoogleButton />
     </form>
   );
 }
