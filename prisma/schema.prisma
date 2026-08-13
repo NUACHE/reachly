@@ -1,0 +1,205 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  BRAND
+  INFLUENCER
+  ADMIN
+}
+
+enum CampaignStatus {
+  OPEN
+  ACTIVE
+  CLOSED
+  COMPLETED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+enum CampaignObjective {
+  AWARENESS
+  ENGAGEMENT
+  PRODUCT
+}
+
+enum TeamMemberRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum SocialPlatform {
+  YOUTUBE
+  INSTAGRAM
+  TIKTOK
+  FACEBOOK
+  TWITTER
+  LINKEDIN
+}
+
+enum NotificationType {
+  CAMPAIGN_INVITE
+  APPLICATION_ACCEPTED
+  APPLICATION_REJECTED
+  POST_LINKED
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  passwordHash      String?
+  role              Role
+  suspended         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  brandProfile      BrandProfile?
+  influencerProfile InfluencerProfile?
+  notifications     Notification[]
+}
+
+/** Real, per-user events — created when a brand invites/decides, or when a synced social post gets linked to a campaign. */
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+}
+
+model BrandProfile {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName String
+  website     String?
+  logoUrl     String?
+  campaigns   Campaign[]
+  teamMembers TeamMember[]
+}
+
+model TeamMember {
+  id        String         @id @default(cuid())
+  brandId   String
+  brand     BrandProfile   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  role      TeamMemberRole @default(EDITOR)
+  invited   Boolean        @default(true)
+  createdAt DateTime       @default(now())
+
+  @@unique([brandId, email])
+}
+
+model InfluencerProfile {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName     String
+  bio             String?
+  niches          String[]
+  followerCount   Int             @default(0)
+  engagementRate  Float           @default(0)
+  portfolioLinks  String[]
+  applications    Application[]
+  socialAccounts  SocialAccount[]
+}
+
+/** One row per connected platform per influencer — generic so new platforms need no schema change. */
+model SocialAccount {
+  id                String         @id @default(cuid())
+  influencerId      String
+  influencer        InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  platform          SocialPlatform
+  externalAccountId String
+  username          String?
+  displayName       String?
+  accessToken       String
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  followerCount     Int            @default(0)
+  connectedAt       DateTime       @default(now())
+  lastSyncedAt      DateTime?
+  posts             SocialPost[]
+
+  @@unique([influencerId, platform])
+}
+
+/** A synced post/video from a connected platform, generic enough for views/likes/comments across platforms. */
+model SocialPost {
+  id              String        @id @default(cuid())
+  socialAccountId String
+  socialAccount   SocialAccount @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+  applicationId   String?
+  application     Application?  @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  externalPostId  String
+  title           String?
+  url             String?
+  postedAt        DateTime
+  views           Int           @default(0)
+  likes           Int           @default(0)
+  comments        Int           @default(0)
+  fetchedAt       DateTime      @default(now())
+
+  @@unique([socialAccountId, externalPostId])
+}
+
+model Campaign {
+  id              String            @id @default(cuid())
+  brandId         String
+  brand           BrandProfile      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  objective       CampaignObjective @default(AWARENESS)
+  niches          String[]
+  minFollowers    Int
+  maxFollowers    Int
+  budget          Int
+  deliverables    String
+  status          CampaignStatus    @default(OPEN)
+  deadline        DateTime
+  kpis            String[]          @default([])
+  dos             String[]          @default([])
+  donts           String[]          @default([])
+  hashtags        String[]          @default([])
+  postingSchedule Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  applications    Application[]
+}
+
+model Application {
+  id              String            @id @default(cuid())
+  campaignId      String
+  campaign        Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  influencerId    String
+  influencer      InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  note            String?
+  matchScore      Int
+  status          ApplicationStatus @default(PENDING)
+  deliverableLink String?
+  appliedAt       DateTime          @default(now())
+  decidedAt       DateTime?
+  socialPosts     SocialPost[]
+
+  @@unique([campaignId, influencerId])
+}
