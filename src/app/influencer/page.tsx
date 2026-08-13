@@ -1,14 +1,14 @@
-import { Wallet } from "lucide-react";
+import { Award } from "lucide-react";
 import { Topbar } from "@/components/dashboard/topbar";
 import { HomeCampaigns } from "@/components/influencer/home-campaigns";
-import { getInfluencerBalance, getInfluencerJoinedCampaigns, getInfluencerProfile } from "@/lib/data/influencer";
+import { getInfluencerPoints, getInfluencerJoinedCampaigns, getInfluencerProfile } from "@/lib/data/influencer";
 
 export default async function InfluencerDashboardPage() {
   const influencerId = "demo-influencer-1";
-  const [profile, joined, balance] = await Promise.all([
+  const [profile, joined, points] = await Promise.all([
     getInfluencerProfile(influencerId),
     getInfluencerJoinedCampaigns(influencerId),
-    getInfluencerBalance(influencerId),
+    getInfluencerPoints(influencerId),
   ]);
   const firstName = profile.displayName.split(" ")[0];
 
@@ -24,8 +24,8 @@ export default async function InfluencerDashboardPage() {
               <p className="mt-1 text-sm text-white/70">Welcome to Reachly, we hope you are ready to begin influencing.</p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-xl bg-brand-orange px-5 py-3 text-sm font-semibold text-white">
-              <Wallet size={18} />
-              Your Balance : ¢{balance.toFixed(2)}
+              <Award size={18} />
+              {points.toLocaleString()} Points
             </span>
           </div>
         </div>

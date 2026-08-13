@@ -1,45 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import {
-  AlertCircle,
-  Bell,
-  Info,
-  Lock,
-  LogOut,
-  Mail,
-  Share2,
-  User,
-  Wallet as WalletIcon,
-} from "lucide-react";
+import { Award, Lock, LogOut, Share2, User } from "lucide-react";
 import { InfluencerProfileForm } from "@/components/profile/influencer-profile-form";
-import { WalletTab } from "@/components/influencer/wallet-tab";
+import { PointsTab } from "@/components/influencer/points-tab";
 import { ConnectedAccountsTab, type YoutubeAccountView } from "@/components/influencer/connected-accounts-tab";
-import { NotificationsTab, HelpCenterTab, AboutTab } from "@/components/influencer/settings-lists";
 import { ChangePasswordForm } from "@/components/account/change-password-form";
 import { LogoutConfirmModal } from "@/components/account/logout-confirm-modal";
-import { TextField } from "@/components/ui/text-field";
-import { Button } from "@/components/ui/button";
 import type { MockInfluencer } from "@/lib/mock-data";
 
 const NAV_ITEMS = [
   { key: "profile", label: "Edit Profile", icon: User },
-  { key: "wallet", label: "Wallet", icon: WalletIcon },
+  { key: "points", label: "Points", icon: Award },
   { key: "connected", label: "Connected Accounts", icon: Share2 },
-  { key: "notifications", label: "Notifications", icon: Bell },
-  { key: "email", label: "Change Email", icon: Mail },
-  { key: "help", label: "Get Help", icon: AlertCircle },
   { key: "password", label: "Change Password", icon: Lock },
-  { key: "about", label: "About", icon: Info },
 ] as const;
 
 type NavKey = (typeof NAV_ITEMS)[number]["key"] | "logout";
 
 interface InfluencerProfileSettingsProps {
   profile: MockInfluencer;
-  balance: number;
-  earningEntries: { id: string; title: string }[];
-  email: string;
+  points: number;
+  pointsEntries: { id: string; title: string; earnedAt: string }[];
   youtubeAccount: YoutubeAccountView | null;
   initialTab?: NavKey;
   socialError?: string | null;
@@ -47,17 +29,14 @@ interface InfluencerProfileSettingsProps {
 
 export function InfluencerProfileSettings({
   profile,
-  balance,
-  earningEntries,
-  email,
+  points,
+  pointsEntries,
   youtubeAccount,
   initialTab,
   socialError,
 }: InfluencerProfileSettingsProps) {
-  const [tab, setTab] = useState<NavKey>(initialTab ?? "wallet");
+  const [tab, setTab] = useState<NavKey>(initialTab ?? "points");
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const [emailValue, setEmailValue] = useState(email);
-  const [emailSaved, setEmailSaved] = useState(false);
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
@@ -87,27 +66,9 @@ export function InfluencerProfileSettings({
 
       <div>
         {tab === "profile" ? <InfluencerProfileForm profile={profile} /> : null}
-        {tab === "wallet" ? <WalletTab balance={balance} entries={earningEntries} /> : null}
+        {tab === "points" ? <PointsTab points={points} entries={pointsEntries} /> : null}
         {tab === "connected" ? <ConnectedAccountsTab youtubeAccount={youtubeAccount} socialError={socialError} /> : null}
-        {tab === "notifications" ? <NotificationsTab /> : null}
-        {tab === "email" ? (
-          <form
-            className="flex max-w-lg flex-col gap-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setEmailSaved(true);
-            }}
-          >
-            <TextField label="Email Address" name="email" type="email" required value={emailValue} onChange={(e) => setEmailValue(e.target.value)} />
-            {emailSaved ? <p className="text-sm text-emerald-600">Email updated.</p> : null}
-            <Button type="submit" fullWidth={false} className="px-8">
-              Update Email
-            </Button>
-          </form>
-        ) : null}
-        {tab === "help" ? <HelpCenterTab /> : null}
         {tab === "password" ? <ChangePasswordForm /> : null}
-        {tab === "about" ? <AboutTab /> : null}
       </div>
 
       <LogoutConfirmModal open={logoutOpen} onClose={() => setLogoutOpen(false)} />

@@ -1,12 +1,11 @@
 import { Topbar } from "@/components/dashboard/topbar";
 import { InfluencerProfileSettings } from "@/components/influencer/influencer-profile-settings";
 import {
-  getInfluencerBalance,
+  getInfluencerPoints,
   getInfluencerJoinedCampaigns,
   getInfluencerProfile,
   getSocialAccountsForInfluencer,
 } from "@/lib/data/influencer";
-import { requireUser } from "@/lib/rbac";
 
 interface InfluencerProfilePageProps {
   searchParams: Promise<{ tab?: string; social_error?: string }>;
@@ -16,11 +15,10 @@ export default async function InfluencerProfilePage({ searchParams }: Influencer
   const influencerId = "demo-influencer-1";
   const params = await searchParams;
 
-  const [profile, balance, joined, user, socialAccounts] = await Promise.all([
+  const [profile, points, joined, socialAccounts] = await Promise.all([
     getInfluencerProfile(influencerId),
-    getInfluencerBalance(influencerId),
+    getInfluencerPoints(influencerId),
     getInfluencerJoinedCampaigns(influencerId),
-    requireUser(),
     getSocialAccountsForInfluencer(),
   ]);
 
@@ -28,13 +26,16 @@ export default async function InfluencerProfilePage({ searchParams }: Influencer
 
   return (
     <div>
-      <Topbar title="Profile" description="Manage your wallet, connected accounts, and settings." />
+      <Topbar title="Profile" description="Manage your points, connected accounts, and settings." />
       <div className="p-8">
         <InfluencerProfileSettings
           profile={{ ...profile, bio: profile.bio ?? "" }}
-          balance={balance}
-          earningEntries={joined.map((entry) => ({ id: entry.application.id, title: entry.campaign.title }))}
-          email={user.email}
+          points={points}
+          pointsEntries={joined.map((entry) => ({
+            id: entry.application.id,
+            title: entry.campaign.title,
+            earnedAt: entry.application.decidedAt,
+          }))}
           youtubeAccount={youtubeAccount}
           initialTab={params.tab === "connected" ? "connected" : undefined}
           socialError={params.social_error ?? null}

@@ -78,14 +78,20 @@ export async function getInfluencerJoinedCampaigns(_influencerId: string) {
       matchScore: application.matchScore,
       status: application.status,
       appliedAt: application.appliedAt.toISOString().slice(0, 10),
+      decidedAt: (application.decidedAt ?? application.appliedAt).toISOString(),
     },
     campaign: toMockCampaign(application.campaign),
     kpiProgress: application.status === "COMPLETED" ? 100 : 0,
   }));
 }
 
-/** A share of the budget for every campaign this influencer has been accepted into — no payment/payout model exists yet. */
-export async function getInfluencerBalance(_influencerId: string) {
+/**
+ * Points earned for every campaign this influencer has been accepted into — a simple,
+ * disclosed placeholder formula (5% of campaign budget), not a real payout ledger. Framed
+ * as redeemable points rather than a cash balance until a real payment/redemption model
+ * ships (Technical_Debt_Plan DEBT-07).
+ */
+export async function getInfluencerPoints(_influencerId: string) {
   const influencer = await getCurrentInfluencerProfile();
 
   const applications = await prisma.application.findMany({

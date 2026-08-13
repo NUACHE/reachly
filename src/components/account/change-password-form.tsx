@@ -3,23 +3,29 @@
 import { useState } from "react";
 import { PasswordField } from "@/components/ui/password-field";
 import { Button } from "@/components/ui/button";
+import { changePasswordAction } from "@/lib/actions/account";
 
 export function ChangePasswordForm() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (newPassword.length < 8) {
-      setMessage({ text: "New password must be at least 8 characters.", error: true });
+    setMessage(null);
+    setIsSubmitting(true);
+
+    const result = await changePasswordAction({ oldPassword, newPassword, confirmPassword });
+
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setMessage({ text: result.error ?? "Something went wrong. Please try again.", error: true });
       return;
     }
-    if (newPassword !== confirmPassword) {
-      setMessage({ text: "New password and confirmation don't match.", error: true });
-      return;
-    }
+
     setMessage({ text: "Password updated.", error: false });
     setOldPassword("");
     setNewPassword("");
@@ -32,8 +38,8 @@ export function ChangePasswordForm() {
       <PasswordField label="New Password" name="newPassword" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
       <PasswordField label="Confirm New Password" name="confirmPassword" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
       {message ? <p className={`text-sm ${message.error ? "text-red-600" : "text-emerald-600"}`}>{message.text}</p> : null}
-      <Button type="submit" fullWidth={false} className="px-8">
-        Change Password
+      <Button type="submit" fullWidth={false} className="px-8" disabled={isSubmitting}>
+        {isSubmitting ? "Updating…" : "Change Password"}
       </Button>
     </form>
   );

@@ -51,7 +51,7 @@ export function InfluencerDirectory({ influencers, campaigns }: InfluencerDirect
         </div>
       )}
 
-      <InfluencerFilterPanel open={filterOpen} initial={filters} onClose={() => setFilterOpen(false)} onApply={(next) => { setFilters(next); setFilterOpen(false); }} />
+      <InfluencerFilterPanel key={String(filterOpen)} open={filterOpen} initial={filters} onClose={() => setFilterOpen(false)} onApply={(next) => { setFilters(next); setFilterOpen(false); }} />
     </div>
   );
 }

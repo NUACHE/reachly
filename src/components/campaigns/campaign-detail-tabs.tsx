@@ -6,7 +6,6 @@ import { Heart, LineChart, Pencil, Settings, Users, Users2, Wallet } from "lucid
 import { StatCard } from "@/components/dashboard/stat-card";
 import { PlatformMetricsChart } from "@/components/dashboard/platform-metrics-chart";
 import { InfluencerPerformanceTable, type InfluencerPerformanceRow } from "@/components/dashboard/influencer-performance-table";
-import { ComingSoon } from "@/components/dashboard/coming-soon";
 import { ApplicationRow } from "@/components/campaigns/application-row";
 import { EditCampaignModal } from "@/components/campaigns/edit-campaign-modal";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import { formatCompact } from "@/lib/format";
 import type { MockActivityItem, MockApplication, MockCampaign, MockCampaignMetrics } from "@/lib/mock-data";
 import type { PlatformMetricPoint } from "@/lib/data/platform-metrics";
 
-const TABS = ["Overview", "Guidelines", "Media", "Influencers", "Campaign Posts", "Settings"] as const;
+const TABS = ["Overview", "Guidelines", "Influencers", "Settings"] as const;
 type Tab = (typeof TABS)[number];
 
 interface CampaignDetailTabsProps {
@@ -181,8 +180,6 @@ export function CampaignDetailTabs({ campaign, metrics, activity, influencerRows
         </div>
       ) : null}
 
-      {tab === "Media" ? <ComingSoon title="Media" description="Uploaded campaign assets will show up here." /> : null}
-
       {tab === "Influencers" ? (
         <div className="flex flex-col gap-6">
           <div>
@@ -221,8 +218,6 @@ export function CampaignDetailTabs({ campaign, metrics, activity, influencerRows
           </div>
         </div>
       ) : null}
-
-      {tab === "Campaign Posts" ? <ComingSoon title="Campaign Posts" description="Published posts from your influencers will show up here." /> : null}
 
       {tab === "Settings" ? (
         <div className="rounded-2xl border border-border-subtle bg-white p-6">

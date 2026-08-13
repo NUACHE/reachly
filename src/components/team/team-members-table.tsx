@@ -244,7 +244,7 @@ export function TeamMembersTable({ initialMembers }: { initialMembers: TeamMembe
         </div>
       )}
 
-      <EditTeamMemberModal open={!!editing} member={editing} onClose={() => setEditing(null)} onSave={handleSaveRole} />
+      <EditTeamMemberModal key={editing?.id ?? "none"} open={!!editing} member={editing} onClose={() => setEditing(null)} onSave={handleSaveRole} />
 
       <InviteTeamMemberModal open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={handleInvite} />
 

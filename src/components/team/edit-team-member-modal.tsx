@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BlueModal } from "@/components/ui/blue-modal";
 import { Button } from "@/components/ui/button";
 import { ROLE_OPTIONS } from "@/components/team/team-role";
@@ -14,11 +14,7 @@ interface EditTeamMemberModalProps {
 }
 
 export function EditTeamMemberModal({ open, member, onClose, onSave }: EditTeamMemberModalProps) {
-  const [role, setRole] = useState<TeamMemberRole>("EDITOR");
-
-  useEffect(() => {
-    if (member) setRole(member.role);
-  }, [member]);
+  const [role, setRole] = useState<TeamMemberRole>(member?.role ?? "EDITOR");
 
   return (
     <BlueModal open={open && !!member} onClose={onClose} title="Edit Team Member">

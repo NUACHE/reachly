@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NICHES } from "@/lib/niches";
@@ -22,10 +22,6 @@ interface InfluencerFilterPanelProps {
 
 export function InfluencerFilterPanel({ open, initial, onClose, onApply }: InfluencerFilterPanelProps) {
   const [draft, setDraft] = useState(initial);
-
-  useEffect(() => {
-    if (open) setDraft(initial);
-  }, [open, initial]);
 
   if (!open) return null;
 
