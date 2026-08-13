@@ -4,11 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 import { exchangeCodeForTokens } from "@/lib/youtube";
 import { syncYoutubeAccount } from "@/lib/social";
+import { getAppUrl } from "@/lib/app-url";
 
 export async function GET(request: NextRequest) {
   const user = await requireRole("INFLUENCER");
 
-  const url = new URL(request.url);
+  const url = new URL(request.url, getAppUrl());
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const oauthError = url.searchParams.get("error");
@@ -18,14 +19,14 @@ export async function GET(request: NextRequest) {
   cookieStore.delete("youtube_oauth_state");
 
   if (oauthError) {
-    return NextResponse.redirect(new URL(`/influencer/profile?tab=connected&social_error=${encodeURIComponent(oauthError)}`, request.url));
+    return NextResponse.redirect(new URL(`/influencer/profile?tab=connected&social_error=${encodeURIComponent(oauthError)}`, getAppUrl()));
   }
   if (!code || !state || state !== expectedState) {
-    return NextResponse.redirect(new URL("/influencer/profile?tab=connected&social_error=invalid_state", request.url));
+    return NextResponse.redirect(new URL("/influencer/profile?tab=connected&social_error=invalid_state", getAppUrl()));
   }
 
   try {
-    const redirectUri = new URL("/api/social/youtube/callback", request.url).toString();
+    const redirectUri = new URL("/api/social/youtube/callback", getAppUrl()).toString();
     const tokens = await exchangeCodeForTokens(code, redirectUri);
     const influencer = await prisma.influencerProfile.findUniqueOrThrow({ where: { userId: user.id } });
 
@@ -48,9 +49,9 @@ export async function GET(request: NextRequest) {
 
     await syncYoutubeAccount(account.id);
 
-    return NextResponse.redirect(new URL("/influencer/profile?tab=connected&connected=youtube", request.url));
+    return NextResponse.redirect(new URL("/influencer/profile?tab=connected&connected=youtube", getAppUrl()));
   } catch (err) {
     console.error("YouTube connect failed", err);
-    return NextResponse.redirect(new URL("/influencer/profile?tab=connected&social_error=connect_failed", request.url));
+    return NextResponse.redirect(new URL("/influencer/profile?tab=connected&social_error=connect_failed", getAppUrl()));
   }
 }
