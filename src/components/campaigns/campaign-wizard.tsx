@@ -252,7 +252,7 @@ export function CampaignWizard({ influencers }: CampaignWizardProps) {
                 label="Deliverables"
                 name="deliverables"
                 rows={2}
-                placeholder="e.g. 2 Instagram Reels + 1 TikTok video"
+                placeholder="e.g. 1 YouTube video + 2 Shorts"
                 value={deliverables}
                 onChange={(e) => setDeliverables(e.target.value)}
                 error={
@@ -451,8 +451,7 @@ export function CampaignWizard({ influencers }: CampaignWizardProps) {
               <div>
                 <h3 className="mb-1 text-sm font-semibold text-ink">Posting Schedule</h3>
                 <p className="mb-3 text-xs text-muted">
-                  Only YouTube has a real connected-account integration right now — enable it here if you want posts counted automatically.
-                  Other platforms are tracked as plain schedule entries with no automatic sync yet.
+                  Posts are counted automatically once the influencer connects their YouTube account.
                 </p>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {PLATFORMS.map((platform) => {

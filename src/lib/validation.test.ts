@@ -97,7 +97,7 @@ describe("campaignSchema", () => {
     minFollowers: 1000,
     maxFollowers: 10000,
     budget: 500,
-    deliverables: "One TikTok video",
+    deliverables: "One YouTube video",
     deadline: "2027-01-01",
   };
 

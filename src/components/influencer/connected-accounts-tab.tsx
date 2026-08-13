@@ -8,7 +8,6 @@ import { disconnectSocialAccountAction, syncSocialAccountAction } from "@/lib/ac
 import { PLATFORMS } from "@/lib/platforms";
 import type { SocialPost } from "@/generated/prisma/client";
 
-const OTHER_PLATFORMS = ["Instagram", "TikTok", "Facebook", "Twitter", "LinkedIn"];
 const YOUTUBE_META = PLATFORMS.find((p) => p.key === "YouTube")!;
 
 export interface YoutubeAccountView {
@@ -118,13 +117,6 @@ export function ConnectedAccountsTab({ youtubeAccount, socialError }: ConnectedA
           </div>
         ) : null}
       </div>
-
-      {OTHER_PLATFORMS.map((platform) => (
-        <div key={platform} className="flex items-center justify-between rounded-xl border border-border-subtle bg-white px-4 py-3">
-          <p className="text-sm font-medium text-ink">{platform}</p>
-          <p className="text-[11px] text-muted">Not available yet</p>
-        </div>
-      ))}
     </div>
   );
 }

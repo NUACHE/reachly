@@ -45,11 +45,6 @@ enum TeamMemberRole {
 
 enum SocialPlatform {
   YOUTUBE
-  INSTAGRAM
-  TIKTOK
-  FACEBOOK
-  TWITTER
-  LINKEDIN
 }
 
 enum NotificationType {

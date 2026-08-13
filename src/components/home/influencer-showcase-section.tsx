@@ -45,8 +45,7 @@ export function InfluencerShowcaseSection() {
           </h2>
           <p className="mt-4 text-base text-muted">
             Every influencer profile on Reachly shows verified follower counts, engagement rate,
-            and past campaign performance across Instagram, TikTok, and YouTube — so brands can
-            decide with confidence.
+            and past campaign performance on YouTube — so brands can decide with confidence.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/signup">
