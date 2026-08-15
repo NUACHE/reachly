@@ -9,10 +9,10 @@ import { getAppUrl } from "@/lib/app-url";
 export async function GET(request: NextRequest) {
   const user = await requireRole("INFLUENCER");
 
-  const url = new URL(request.url, getAppUrl());
-  const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
-  const oauthError = url.searchParams.get("error");
+  // Query params only — do not use request.url as an origin (Render may report localhost:PORT).
+  const code = request.nextUrl.searchParams.get("code");
+  const state = request.nextUrl.searchParams.get("state");
+  const oauthError = request.nextUrl.searchParams.get("error");
 
   const cookieStore = await cookies();
   const expectedState = cookieStore.get("youtube_oauth_state")?.value;
