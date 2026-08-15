@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { TextField } from "@/components/ui/text-field";
 import { PasswordField } from "@/components/ui/password-field";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
 export function LoginForm() {
@@ -60,13 +58,6 @@ export function LoginForm() {
         value={password}
         onChange={(event) => setPassword(event.target.value)}
       />
-
-      <div className="flex items-center justify-between">
-        <Checkbox label="Remember me" name="remember" />
-        <Link href="/forgot-password" className="text-sm font-medium text-brand-orange">
-          Forgot Password?
-        </Link>
-      </div>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
